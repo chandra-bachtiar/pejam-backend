@@ -56,29 +56,6 @@ export class AuthService {
         }
     }
 
-    async register(user: RegisterDto): Promise<ReturnUser> {
-        try {
-            const newUser = await this.usersService.create(user)
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const { password, ...result } = newUser
-            return result
-        } catch (error) {
-            console.error(error)
-            if (error instanceof QueryFailedError) {
-                const driverError = error.driverError as { code?: string; detail?: string }
-                if (driverError?.code === '23505') {
-                    const detail = driverError.detail ?? ''
-                    if (detail.includes('email')) {
-                        throw new ConflictException('Email Already registered')
-                    }
-                    throw new ConflictException('Email Already registered')
-                }
-            }
-
-            throw new InternalServerErrorException('Failed to register user')
-        }
-    }
-
     async getDetailUser(username: string): Promise<Partial<User>> {
         const user = await this.usersService.findByUsername(username)
         if (!user) {
