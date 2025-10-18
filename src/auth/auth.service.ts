@@ -15,11 +15,16 @@ import { User } from '../user/entities/user.entity'
 
 export interface ReturnUser {
     id: number
-    email: string
-    name: string
-    phone: string
-    role: string
-    verified: boolean
+    nis: string
+    username: string
+    nama: string
+    jenis_kelamin: 'L' | 'P'
+    jurusan: string
+    kelas: string
+    role: 'admin' | 'user'
+    status: string
+    image: string
+    is_active: boolean
 }
 
 @Injectable()
@@ -31,7 +36,7 @@ export class AuthService {
     ) {}
 
     async validateUser(identifier: string, pass: string): Promise<ReturnUser | null> {
-        const user = await this.usersService.findByEmail(identifier)
+        const user = await this.usersService.findByUsername(identifier)
         if (user && (await bcrypt.compare(pass, user.password))) {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { password, ...result } = user
@@ -43,7 +48,7 @@ export class AuthService {
     async login(
         user: ReturnUser
     ): Promise<{ access_token: string; valid: boolean; user: ReturnUser }> {
-        const payload = { email: user.email, role: user.role, sub: user.id }
+        const payload = { username: user.username, role: user.role, sub: user.id }
         return {
             access_token: await this.jwtService.signAsync(payload),
             valid: true,
@@ -74,8 +79,8 @@ export class AuthService {
         }
     }
 
-    async getDetailUser(email: string): Promise<Partial<User>> {
-        const user = await this.usersService.findByEmail(email)
+    async getDetailUser(username: string): Promise<Partial<User>> {
+        const user = await this.usersService.findByUsername(username)
         if (!user) {
             throw new UnauthorizedException('User not found')
         }
@@ -85,7 +90,7 @@ export class AuthService {
     }
 
     async forgotPassword(identifier: string) {
-        const user = await this.usersService.findByEmail(identifier)
+        const user = await this.usersService.findByUsername(identifier)
         if (!user) {
             return
         }

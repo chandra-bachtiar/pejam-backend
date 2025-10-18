@@ -7,18 +7,9 @@ import {
     UnauthorizedException,
     UseGuards,
 } from '@nestjs/common'
-import { AuthService } from './auth.service'
+import { AuthService, ReturnUser } from './auth.service'
 import { LoginDto } from './dto/login.dto'
-import { RegisterDto } from './dto/register.dto'
 import { JwtAuthGuard } from './jwt-auth.guard'
-
-interface JwtUser {
-    id: number
-    sub: number
-    email: string
-    name: string
-    phone: string
-}
 
 @Controller('auth')
 export class AuthController {
@@ -34,22 +25,16 @@ export class AuthController {
         return this.authService.login(user)
     }
 
-    @Post('register')
-    async register(@Body() registerDto: RegisterDto) {
-        try {
-            const user = await this.authService.register(registerDto)
-            return { message: 'Register Successfully', user }
-        } catch (error) {
-            console.error(error)
-            throw error
-        }
-    }
-
     @Get('me')
     @UseGuards(JwtAuthGuard)
-    async getMe(@Request() request: { user: JwtUser }) {
+    async getMe(@Request() request: { user: ReturnUser }) {
+        const username = request.user?.username
+        if (!username) {
+            throw new UnauthorizedException('Invalid token')
+        }
+
         try {
-            const user = await this.authService.getDetailUser(request.user.email)
+            const user = await this.authService.getDetailUser(username)
             return { valid: true, user }
         } catch {
             throw new UnauthorizedException('Invalid token')

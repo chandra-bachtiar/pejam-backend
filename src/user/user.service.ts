@@ -27,12 +27,17 @@ export class UsersService {
         return await this.userRepository.save(newUser)
     }
 
-    async findOne(id: number): Promise<User | null> {
-        return this.userRepository.findOneBy({ id })
+    async findOne(id: number | string): Promise<User | null> {
+        const lookupId = typeof id === 'string' ? Number(id) : id
+        if (!Number.isFinite(lookupId)) {
+            return null
+        }
+
+        return this.userRepository.findOneBy({ id: lookupId })
     }
 
-    async findByEmail(email: string): Promise<User | null> {
-        return this.userRepository.findOneBy({ email })
+    async findByUsername(username: string): Promise<User | null> {
+        return this.userRepository.findOneBy({ username })
     }
 
     async findAll(): Promise<User[]> {

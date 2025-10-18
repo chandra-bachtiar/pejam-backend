@@ -4,16 +4,15 @@ import { ExtractJwt, Strategy } from 'passport-jwt'
 import { ConfigService } from '@nestjs/config'
 import { UsersService } from '../user/user.service'
 
-type JwtPayload = { sub: number; email?: string; role?: string; iat?: number; exp?: number }
+type JwtPayload = { sub: number; username?: string; role?: string; iat?: number; exp?: number }
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy) {
+export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     constructor(
         private readonly configService: ConfigService,
         private readonly usersService: UsersService
     ) {
         const secret = configService.getOrThrow<string>('JWT_SECRET')
-
         super({
             jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
             ignoreExpiration: false,
