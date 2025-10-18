@@ -1,14 +1,6 @@
-// src/auth/auth.service.ts
-import {
-    ConflictException,
-    Injectable,
-    InternalServerErrorException,
-    UnauthorizedException,
-} from '@nestjs/common'
+import { Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import * as bcrypt from 'bcrypt'
-import { RegisterDto } from './dto/register.dto'
-import { QueryFailedError } from 'typeorm'
 import { ConfigService } from '@nestjs/config'
 import { UsersService } from 'src/user/user.service'
 import { User } from '../user/entities/user.entity'
