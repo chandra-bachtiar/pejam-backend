@@ -1,8 +1,17 @@
-import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus } from '@nestjs/common'
+import {
+    ArgumentsHost,
+    Catch,
+    ExceptionFilter,
+    HttpException,
+    HttpStatus,
+    Logger,
+} from '@nestjs/common'
 import { HttpAdapterHost } from '@nestjs/core'
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
+    private readonly logger = new Logger(AllExceptionsFilter.name)
+
     constructor(private readonly httpAdapterHost: HttpAdapterHost) {}
 
     catch(exception: unknown, host: ArgumentsHost) {
@@ -25,6 +34,13 @@ export class AllExceptionsFilter implements ExceptionFilter {
             else if (res?.message) message = String(res.message)
             else message = exception.message
         }
+
+        // ✅ Tambahkan logging stack trace / error details:
+        this.logger.error(
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+            `❌ ${httpStatus} - ${exception instanceof Error ? exception.message : exception}`,
+            exception instanceof Error ? exception.stack : undefined
+        )
 
         const body = { status: 'error', message }
         httpAdapter.reply(ctx.getResponse(), body, httpStatus)

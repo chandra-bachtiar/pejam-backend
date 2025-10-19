@@ -1,12 +1,14 @@
 import { HttpAdapterHost, NestFactory } from '@nestjs/core'
 import { AppModule } from './app.module'
-import { BadRequestException, ValidationPipe } from '@nestjs/common'
+import { BadRequestException, Logger, ValidationPipe } from '@nestjs/common'
 import { ResponseTransformInterceptor } from './common/interceptors/response-transform.interceptor'
 import { AllExceptionsFilter } from './common/filters/all-interceptors.filter'
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule)
     app.enableCors()
+
+    app.useLogger(new Logger())
 
     app.useGlobalPipes(
         new ValidationPipe({
