@@ -5,8 +5,8 @@ import { TypeOrmModule } from '@nestjs/typeorm'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { UserModule } from './user/user.module'
 import { AuthModule } from './auth/auth.module'
-import { CandidateModule } from './candidate/candidate.module';
-import { VoteModule } from './vote/vote.module';
+import { CandidateModule } from './candidate/candidate.module'
+import { VoteModule } from './vote/vote.module'
 
 @Module({
     imports: [
