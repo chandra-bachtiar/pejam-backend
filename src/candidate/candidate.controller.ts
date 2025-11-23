@@ -6,6 +6,7 @@ import {
     HttpException,
     HttpStatus,
     Param,
+    ParseFilePipeBuilder,
     Patch,
     Post,
     Query,
@@ -21,6 +22,7 @@ import { UpdateCandidateDto } from './dto/update-candidate.dto'
 import { RolesGuard } from '../auth/roles.guard'
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'
 import { Roles } from '../auth/roles.decorator'
+import { CustomImageValidator } from 'src/common/validators/image-file.validator'
 
 @Controller('candidates')
 export class CandidateController {
@@ -54,7 +56,16 @@ export class CandidateController {
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles('admin')
     @UseInterceptors(FileInterceptor('image', multerConfigCandidate))
-    async create(@Body() data: CreateCandidateDto, @UploadedFile() file?: Express.Multer.File) {
+    async create(
+        @Body() data: CreateCandidateDto,
+        @UploadedFile(
+            new ParseFilePipeBuilder().addValidator(new CustomImageValidator()).build({
+                errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+                fileIsRequired: false,
+            })
+        )
+        file: Express.Multer.File | undefined
+    ) {
         return await this.candidateService.create(data, file)
     }
 
@@ -65,7 +76,13 @@ export class CandidateController {
     async update(
         @Param('id') id: number,
         @Body() data: UpdateCandidateDto,
-        @UploadedFile() file?: Express.Multer.File
+        @UploadedFile(
+            new ParseFilePipeBuilder().addValidator(new CustomImageValidator()).build({
+                errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+                fileIsRequired: false,
+            })
+        )
+        file: Express.Multer.File | undefined
     ) {
         const candidate = await this.candidateService.update(id, data, file)
         if (!candidate) throw new HttpException('Candidate not found', HttpStatus.NOT_FOUND)

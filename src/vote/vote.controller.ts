@@ -48,6 +48,12 @@ export class VoteController {
         return await this.voteService.publicVotes()
     }
 
+    @Get('/candidates')
+    @UseGuards(JwtAuthGuard)
+    async candidates() {
+        return await this.voteService.getAllCandidates()
+    }
+
     @Get('/check')
     @UseGuards(JwtAuthGuard)
     async checkVote(@Request() request: { user: ReturnUser }) {

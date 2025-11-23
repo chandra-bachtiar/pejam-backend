@@ -21,7 +21,7 @@ export class UsersService {
         try {
             const qb = this.userRepository
                 .createQueryBuilder('user')
-                .leftJoinAndSelect('user.vote', 'vote')
+                .leftJoinAndSelect('user.votes', 'vote')
 
             if (search) {
                 qb.andWhere(
@@ -38,7 +38,7 @@ export class UsersService {
                 qb.andWhere('vote.id IS NULL')
             }
 
-            qb.orderBy('user.created_at', 'DESC')
+            qb.orderBy('user.createdAt', 'DESC')
 
             const [data, total] = await qb
                 .skip((page - 1) * perPage)

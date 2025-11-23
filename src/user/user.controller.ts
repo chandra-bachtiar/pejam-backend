@@ -6,6 +6,7 @@ import {
     HttpException,
     HttpStatus,
     Param,
+    ParseFilePipeBuilder,
     Patch,
     Post,
     Query,
@@ -21,8 +22,9 @@ import { multerConfig } from '../common/file/multer.config'
 import { RolesGuard } from '../auth/roles.guard'
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'
 import { Roles } from '../auth/roles.decorator'
+import { CustomImageValidator } from 'src/common/validators/image-file.validator'
 
-@Controller('users')
+@Controller('user')
 export class UsersController {
     constructor(private readonly usersService: UsersService) {}
 
@@ -36,7 +38,6 @@ export class UsersController {
         @Query('page') page = 1,
         @Query('perPage') perPage = 10
     ) {
-        console.log({ search, isNotVoted, role, page, perPage })
         const result = await this.usersService.findAll({
             search,
             role,
@@ -61,7 +62,13 @@ export class UsersController {
     @Roles('admin')
     @UseGuards(JwtAuthGuard, RolesGuard)
     async create(
-        @UploadedFile() file: Express.Multer.File | undefined,
+        @UploadedFile(
+            new ParseFilePipeBuilder().addValidator(new CustomImageValidator()).build({
+                errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+                fileIsRequired: false,
+            })
+        )
+        file: Express.Multer.File | undefined,
         @Body() data: CreateUserDto
     ) {
         const user = await this.usersService.create(data, file)
@@ -74,7 +81,13 @@ export class UsersController {
     @UseGuards(JwtAuthGuard, RolesGuard)
     async update(
         @Param('id') id: number,
-        @UploadedFile() file: Express.Multer.File | undefined,
+        @UploadedFile(
+            new ParseFilePipeBuilder().addValidator(new CustomImageValidator()).build({
+                errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+                fileIsRequired: false,
+            })
+        )
+        file: Express.Multer.File | undefined,
         @Body() data: UpdateUserDto
     ) {
         const user = await this.usersService.update(id, data, file)

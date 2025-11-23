@@ -84,6 +84,10 @@ export class VoteService {
         }
     }
 
+    async getAllCandidates() {
+        return this.candidateRepository.find()
+    }
+
     async checkUserVote(userId: number) {
         try {
             const vote = await this.voteRepository.findOne({ where: { userId } })

@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
+import { Vote } from 'src/vote/entities/vote.entity'
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm'
 
 @Entity('users')
 export class User {
@@ -37,6 +38,9 @@ export class User {
 
     @Column({ type: 'boolean', default: true })
     is_active: boolean
+
+    @OneToMany(() => Vote, (vote) => vote.user)
+    votes: Vote[]
 
     @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
     createdAt: Date
