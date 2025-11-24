@@ -48,6 +48,31 @@ export class UsersController {
         return { status: 'success', user: result }
     }
 
+    @Post('import')
+    @Roles('admin')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @UseInterceptors(FileInterceptor('file'))
+    importUsers(
+        @UploadedFile(
+            new ParseFilePipeBuilder()
+                .addFileTypeValidator({
+                    fileType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                })
+                .build({
+                    errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+                })
+        )
+        file: Express.Multer.File
+    ) {
+        const result = this.usersService.importUsersExcel(file)
+
+        return {
+            status: 'success',
+            message: 'Users imported successfully',
+            result,
+        }
+    }
+
     @Get(':id')
     @Roles('admin')
     @UseGuards(JwtAuthGuard, RolesGuard)

@@ -3,7 +3,7 @@
 # =========================
 FROM node:22-alpine AS builder
 
-# Tambahkan semua dependency untuk build native module seperti canvas
+# Install dependency native module
 RUN apk add --no-cache \
   python3 \
   make \
@@ -18,18 +18,17 @@ RUN apk add --no-cache \
 
 WORKDIR /app
 
-# Salin manifest dulu untuk caching
+# Cache Layer: Copy package.json & yarn.lock
 COPY package.json yarn.lock ./
 
-# Install semua dependencies (termasuk dev)
+# Install dependencies (termasuk devDependencies untuk build)
 RUN yarn install --frozen-lockfile
 
-# Copy seluruh source code
+# Copy source code
 COPY . .
 
-# Build NestJS (output ke /app/dist)
+# Build NestJS
 RUN yarn build
-
 
 # =========================
 # 2️⃣ Production runtime stage
@@ -39,7 +38,7 @@ FROM node:22-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 
-# Install only runtime libs yang dibutuhkan canvas (tanpa dev tools)
+# Install runtime libs (tanpa compiler tools)
 RUN apk add --no-cache \
   cairo \
   pango \
@@ -50,20 +49,25 @@ RUN apk add --no-cache \
   fontconfig \
   ttf-dejavu
 
-# Copy hasil build dan node_modules dari builder
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/yarn.lock ./yarn.lock
-COPY --from=builder /app/dist ./dist
+# --- 🚀 OPTIMASI KECEPATAN BUILD DI SINI ---
 
-# 1. Buat struktur folder upload secara eksplisit agar tidak error saat runtime
-RUN mkdir -p ./uploads/images/user
+# Gunakan flag --chown=node:node SAAT COPY.
+# Ini 100x lebih cepat daripada menjalankan RUN chown -R di akhir.
 
-# 2. Berikan kepemilikan seluruh folder /app kepada user 'node'
-# Tanpa ini, user 'node' tidak bisa menulis file apapun!
-RUN chown -R node:node /app
+COPY --from=builder --chown=node:node /app/node_modules ./node_modules
+COPY --from=builder --chown=node:node /app/package.json ./package.json
+COPY --from=builder --chown=node:node /app/yarn.lock ./yarn.lock
+COPY --from=builder --chown=node:node /app/dist ./dist
 
-# Jalankan dengan user non-root
+# --- 🛡️ PERSIAPAN FOLDER UPLOAD ---
+
+# Buat folder upload dan ubah kepemilikannya ke node
+# Kita lakukan ini manual hanya untuk folder kosong, jadi sangat cepat.
+RUN mkdir -p ./uploads/images/user && chown -R node:node ./uploads
+
+# --- SELESAI ---
+
+# Gunakan user node
 USER node
 
 EXPOSE 3000
