@@ -56,6 +56,13 @@ COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/yarn.lock ./yarn.lock
 COPY --from=builder /app/dist ./dist
 
+# 1. Buat struktur folder upload secara eksplisit agar tidak error saat runtime
+RUN mkdir -p ./uploads/images/user
+
+# 2. Berikan kepemilikan seluruh folder /app kepada user 'node'
+# Tanpa ini, user 'node' tidak bisa menulis file apapun!
+RUN chown -R node:node /app
+
 # Jalankan dengan user non-root
 USER node
 
