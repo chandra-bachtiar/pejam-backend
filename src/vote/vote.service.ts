@@ -106,13 +106,14 @@ export class VoteService {
         }
     }
 
-    async create(candidateId: number, userId: number) {
+    async create(userId: number, candidateId: number) {
         try {
             const existingVote = await this.voteRepository.findOne({ where: { userId } })
             if (existingVote) {
                 throw new HttpException('User has already voted', HttpStatus.CONFLICT)
             }
 
+            console.log(`Creating vote for candidate ${candidateId} by user ${userId}`)
             const candidate = await this.candidateRepository.findOne({ where: { id: candidateId } })
             if (!candidate) {
                 throw new HttpException('Candidate not found', HttpStatus.NOT_FOUND)
