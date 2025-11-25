@@ -63,7 +63,7 @@ COPY --from=builder --chown=node:node /app/dist ./dist
 
 # Buat folder upload dan ubah kepemilikannya ke node
 # Kita lakukan ini manual hanya untuk folder kosong, jadi sangat cepat.
-RUN mkdir -p ./uploads/images/user && chown -R node:node ./uploads
+RUN mkdir -p ./uploads/images/user ./uploads/images/candidate && chown -R node:node ./uploads
 
 # --- SELESAI ---
 
